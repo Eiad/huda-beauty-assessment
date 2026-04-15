@@ -1,0 +1,91 @@
+{
+  "products": {
+    "nude-obsessions-mini": {
+      "title": "Nude Obsessions Reloaded Lipstick Mini",
+      "markets": {
+        "en-AE": {
+          "currency": "AED",
+          "basePrice": 89.00,
+          "discount": { "type": "percentage", "value": 15 },
+          "freeShippingThreshold": 260
+        },
+        "en-US": {
+          "currency": "USD",
+          "basePrice": 24.00,
+          "discount": null,
+          "freeShippingThreshold": 50
+        },
+        "en-GB": {
+          "currency": "GBP",
+          "basePrice": 19.00,
+          "discount": { "type": "fixed", "value": 2 },
+          "freeShippingThreshold": 40
+        },
+        "en-SA": {
+          "currency": "SAR",
+          "basePrice": 90.00,
+          "discount": { "type": "percentage", "value": 10 },
+          "freeShippingThreshold": 260
+        }
+      }
+    },
+    "nude-obsessions-full": {
+      "title": "Nude Obsessions Reloaded Lipstick Full Size",
+      "markets": {
+        "en-AE": {
+          "currency": "AED",
+          "basePrice": 160.00,
+          "discount": { "type": "percentage", "value": 10 },
+          "freeShippingThreshold": 260
+        },
+        "en-US": {
+          "currency": "USD",
+          "basePrice": 44.00,
+          "discount": null,
+          "freeShippingThreshold": 50
+        },
+        "en-GB": {
+          "currency": "GBP",
+          "basePrice": 35.00,
+          "discount": null,
+          "freeShippingThreshold": 40
+        },
+        "en-SA": {
+          "currency": "SAR",
+          "basePrice": 165.00,
+          "discount": { "type": "percentage", "value": 10 },
+          "freeShippingThreshold": 260
+        }
+      }
+    },
+    "faux-mink-lashes": {
+      "title": "Huda Beauty Faux Mink Lashes",
+      "markets": {
+        "en-AE": {
+          "currency": "AED",
+          "basePrice": 129.00,
+          "discount": null,
+          "freeShippingThreshold": 260
+        },
+        "en-US": {
+          "currency": "USD",
+          "basePrice": 35.00,
+          "discount": { "type": "fixed", "value": 5 },
+          "freeShippingThreshold": 50
+        },
+        "en-GB": {
+          "currency": "GBP",
+          "basePrice": 28.00,
+          "discount": null,
+          "freeShippingThreshold": 40
+        },
+        "en-SA": {
+          "currency": "SAR",
+          "basePrice": 130.00,
+          "discount": null,
+          "freeShippingThreshold": 260
+        }
+      }
+    }
+  }
+}
