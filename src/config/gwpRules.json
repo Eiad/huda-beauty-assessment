@@ -1,0 +1,27 @@
+[
+  {
+    "id": "rule_cart_threshold_aed",
+    "type": "cart_threshold",
+    "label": "Spend AED 260 to unlock a free Lash & Blow Mascara",
+    "currency": "AED",
+    "threshold": 260,
+    "gift": {
+      "productId": "gift-mascara-001",
+      "title": "Lash & Blow Mascara (Free Gift)",
+      "variantId": "gift-mascara-001-v1"
+    },
+    "enabled": true
+  },
+  {
+    "id": "rule_lashes_collection",
+    "type": "product_collection",
+    "label": "Buy any Lashes product to unlock a free Lash Glue",
+    "collectionTag": "lashes",
+    "gift": {
+      "productId": "gift-lash-glue-001",
+      "title": "Lash Glue (Free Gift)",
+      "variantId": "gift-lash-glue-001-v1"
+    },
+    "enabled": true
+  }
+]
