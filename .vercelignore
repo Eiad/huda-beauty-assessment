@@ -1,7 +1,4 @@
-src/
 tests/
 docs/
 data/
 *.md
-tsconfig*.json
-jest.config.*
