@@ -6,7 +6,11 @@ let db: Database.Database;
 let insertStmt: Database.Statement;
 
 export function initDb() {
-  const dbPath = path.join(process.cwd(), 'data', 'orders.db');
+  // Use /tmp on Vercel (read-only filesystem), local data/ directory otherwise
+  const isVercel = !!process.env.VERCEL;
+  const dbPath = isVercel
+    ? path.join('/tmp', 'orders.db')
+    : path.join(process.cwd(), 'data', 'orders.db');
   db = new Database(dbPath);
 
   db.exec(`
