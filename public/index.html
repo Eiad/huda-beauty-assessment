@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Huda Beauty — API Demo Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#FAF7F4;--pink:#E6007E;--gold:#B8965A;--charcoal:#1A1A1A;--muted:#8C8680;
+  --white:#FFFFFF;--border:#E8E3DD;--success:#1B9E6F;--error:#D63B4B;--code-bg:#1E1E2A;
+  --pink-light:rgba(230,0,126,0.07);--pink-glow:rgba(230,0,126,0.15);
+  --font-display:'Cormorant Garamond',serif;--font-body:'Outfit',sans-serif;--font-mono:'JetBrains Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--cream);color:var(--charcoal);line-height:1.6;-webkit-font-smoothing:antialiased}
+
+/* Header */
+.header{position:sticky;top:0;z-index:100;background:var(--white);border-bottom:1px solid var(--border);padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(12px)}
+.header-left{display:flex;align-items:center;gap:1rem}
+.logo-badge{background:var(--pink);color:#fff;font-family:var(--font-body);font-weight:700;font-size:.75rem;letter-spacing:.12em;text-transform:lowercase;padding:.35rem .85rem;border-radius:6px}
+.header-subtitle{font-family:var(--font-display);font-size:1rem;font-weight:400;color:var(--muted);letter-spacing:.02em}
+.health-btn{display:flex;align-items:center;gap:.5rem;background:none;border:1px solid var(--border);border-radius:8px;padding:.4rem .85rem;cursor:pointer;font-family:var(--font-body);font-size:.78rem;color:var(--charcoal);transition:all .2s}
+.health-btn:hover{border-color:var(--success);background:rgba(27,158,111,.04)}
+.health-dot{width:8px;height:8px;border-radius:50%;background:var(--success);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(27,158,111,.4)}50%{opacity:.85;box-shadow:0 0 0 6px rgba(27,158,111,0)}}
+.health-dot.offline{background:var(--error);animation:none}
+.health-popover{position:absolute;top:calc(100% + 8px);right:0;background:var(--white);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem;min-width:240px;box-shadow:0 8px 30px rgba(0,0,0,.1);display:none;z-index:200;font-size:.8rem}
+.health-popover.show{display:block;animation:fadeUp .2s ease}
+.health-popover dt{color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;margin-top:.5rem}
+.health-popover dt:first-child{margin-top:0}
+.health-popover dd{font-weight:500;margin-bottom:.25rem}
+.health-wrap{position:relative}
+
+/* Hero */
+.hero{text-align:center;padding:1.5rem 2rem 1rem;max-height:120px;overflow:hidden}
+.hero-eyebrow{font-family:var(--font-body);font-size:.65rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--pink);margin-bottom:.3rem}
+.hero h1{font-family:var(--font-display);font-size:1.65rem;font-weight:700;color:var(--charcoal);line-height:1.2}
+.hero h1 em{font-style:italic;color:var(--pink);font-weight:400}
+.hero p{font-size:.82rem;color:var(--muted);margin-top:.25rem}
+
+/* Tabs */
+.tabs{display:flex;justify-content:center;gap:.6rem;padding:.75rem 2rem;position:sticky;top:56px;z-index:90;background:var(--cream)}
+.tab-btn{font-family:var(--font-body);font-size:.82rem;font-weight:500;padding:.55rem 1.2rem;border-radius:8px;border:1px solid var(--border);background:var(--white);color:var(--muted);cursor:pointer;transition:all .25s;display:flex;align-items:center;gap:.45rem}
+.tab-btn .method{font-family:var(--font-mono);font-size:.6rem;font-weight:500;background:rgba(0,0,0,.06);padding:.1rem .35rem;border-radius:4px}
+.tab-btn:hover{border-color:var(--pink);color:var(--charcoal)}
+.tab-btn.active{background:var(--pink);color:#fff;border-color:var(--pink);box-shadow:0 2px 12px rgba(230,0,126,.25)}
+.tab-btn.active .method{background:rgba(255,255,255,.25);color:#fff}
+
+/* Section Container */
+.container{max-width:1200px;margin:0 auto;padding:0 2rem 3rem}
+.section{display:none;animation:fadeUp .35s ease}
+.section.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.section-header{margin-bottom:1.25rem;padding-top:1rem}
+.section-header h2{font-family:var(--font-display);font-size:1.35rem;font-weight:700;margin-bottom:.15rem}
+.section-header p{font-size:.8rem;color:var(--muted)}
+
+/* Grid Layout */
+.split-grid{display:grid;grid-template-columns:2fr 3fr;gap:1.5rem;align-items:start}
+@media(max-width:800px){.split-grid{grid-template-columns:1fr}}
+
+/* Left Panel Styles */
+.left-panel{display:flex;flex-direction:column;gap:1rem}
+
+/* Response Panel (Right) */
+.response-panel{background:var(--code-bg);border-radius:10px;box-shadow:0 4px 24px rgba(0,0,0,.15);overflow:hidden;position:sticky;top:130px}
+.response-header{display:flex;align-items:center;justify-content:space-between;padding:.65rem 1rem;border-bottom:1px solid rgba(255,255,255,.08)}
+.response-title{display:flex;align-items:center;gap:.5rem;font-size:.78rem;font-weight:500;color:rgba(255,255,255,.7)}
+.response-dot{width:7px;height:7px;border-radius:50%;background:var(--pink)}
+.status-badge{font-family:var(--font-mono);font-size:.65rem;font-weight:500;padding:.15rem .55rem;border-radius:5px;color:#fff}
+.status-badge.s2xx{background:var(--success)}
+.status-badge.s4xx{background:#D4870E}
+.status-badge.s5xx{background:var(--error)}
+.status-badge.waiting{background:rgba(255,255,255,.12);color:rgba(255,255,255,.4)}
+.response-body{padding:1rem;max-height:500px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.15) transparent}
+.response-body::-webkit-scrollbar{width:5px}
+.response-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:3px}
+.response-body pre{font-family:var(--font-mono);font-size:.73rem;line-height:1.75;color:rgba(255,255,255,.85);white-space:pre-wrap;word-break:break-word;margin:0}
+.response-body .placeholder{color:rgba(255,255,255,.3);font-style:italic}
+.request-info{padding:.6rem 1rem;border-bottom:1px solid rgba(255,255,255,.06);font-family:var(--font-mono);font-size:.68rem;line-height:1.7;color:rgba(255,255,255,.5)}
+.request-info .req-line{display:flex;align-items:center;gap:.4rem}
+.request-info .req-arrow{color:var(--pink);font-weight:700}
+.request-info .res-arrow{color:var(--success);font-weight:700}
+.request-info .req-method{color:var(--pink);font-weight:600}
+.request-info .req-url{color:rgba(255,255,255,.7)}
+.request-info .req-size{color:rgba(255,255,255,.3);margin-left:auto}
+.request-info .res-status{font-weight:600}
+.request-info .res-status.ok{color:var(--success)}
+.request-info .res-status.err{color:var(--error)}
+.request-info .res-time{color:rgba(255,255,255,.3);margin-left:auto}
+
+/* Currency Pills */
+.currency-pills{display:flex;gap:.4rem;flex-wrap:wrap}
+.pill{font-family:var(--font-mono);font-size:.72rem;font-weight:500;padding:.35rem .75rem;border-radius:20px;border:1px solid var(--border);background:var(--white);color:var(--muted);cursor:pointer;transition:all .2s}
+.pill.active{background:var(--pink);color:#fff;border-color:var(--pink)}
+.pill:hover:not(.active){border-color:var(--pink);color:var(--pink)}
+
+/* Product Cards */
+.product-list{display:flex;flex-direction:column;gap:.5rem}
+.product-card{display:flex;align-items:center;gap:.7rem;padding:.6rem .75rem;border-radius:10px;border:1px solid var(--border);background:var(--white);transition:all .25s}
+.product-card.in-cart{border-color:var(--pink);background:var(--pink-light)}
+.product-card.bounce{animation:cardBounce .3s ease}
+@keyframes cardBounce{0%{transform:scale(1)}50%{transform:scale(1.015)}100%{transform:scale(1)}}
+.product-emoji{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.15rem;flex-shrink:0}
+.product-card:nth-child(1) .product-emoji{background:#fce4ec}
+.product-card:nth-child(2) .product-emoji{background:#fce4ec}
+.product-card:nth-child(3) .product-emoji{background:#e8eaf6}
+.product-card:nth-child(4) .product-emoji{background:#e8eaf6}
+.product-card:nth-child(5) .product-emoji{background:#f3e5f5}
+.product-info{flex:1;min-width:0}
+.product-name{font-size:.78rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.product-price{font-family:var(--font-mono);font-size:.7rem;color:var(--gold);font-weight:500}
+.qty-controls{display:flex;align-items:center;gap:.35rem;flex-shrink:0}
+.qty-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--white);font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;color:var(--charcoal);font-weight:500}
+.qty-btn:hover{border-color:var(--pink);color:var(--pink)}
+.qty-btn:active{transform:scale(.92)}
+.qty-val{font-family:var(--font-mono);font-size:.78rem;font-weight:600;min-width:20px;text-align:center}
+
+/* Progress Bar */
+.progress-wrap{margin-top:.25rem}
+.progress-label{display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted);margin-bottom:.35rem}
+.progress-label span:last-child{font-family:var(--font-mono);font-weight:500}
+.progress-track{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--pink),#ff4da6);border-radius:3px;transition:width .5s ease;width:0}
+.gift-result{margin-top:.5rem;padding:.6rem .8rem;border-radius:8px;font-size:.78rem;font-weight:500;transition:all .3s}
+.gift-result.unlocked{background:rgba(27,158,111,.08);color:var(--success);border:1px solid rgba(27,158,111,.2);animation:giftPop .4s ease}
+.gift-result.pending{background:rgba(140,134,128,.06);color:var(--muted);border:1px solid var(--border)}
+@keyframes giftPop{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.03)}100%{transform:scale(1);opacity:1}}
+
+/* Pricing */
+.pricing-products{display:flex;flex-direction:column;gap:.5rem}
+.pricing-card{padding:.65rem .85rem;border-radius:9px;border:1px solid var(--border);background:var(--white);cursor:pointer;transition:all .2s;font-size:.82rem;font-weight:500}
+.pricing-card:hover{border-color:var(--pink)}
+.pricing-card.active{border-color:var(--pink);background:var(--pink-light);color:var(--pink)}
+.market-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.75rem}
+.market-card{padding:.7rem .8rem;border-radius:9px;border:1px solid var(--border);background:var(--white);animation:fadeUp .35s ease backwards;transition:all .2s}
+.market-card:nth-child(1){animation-delay:0s}
+.market-card:nth-child(2){animation-delay:.06s}
+.market-card:nth-child(3){animation-delay:.12s}
+.market-card:nth-child(4){animation-delay:.18s}
+.market-flag{font-size:.72rem;color:var(--muted);margin-bottom:.25rem;display:flex;align-items:center;gap:.35rem}
+.market-price{font-family:var(--font-display);font-size:1.25rem;font-weight:700;color:var(--charcoal)}
+.market-discount{display:inline-block;font-size:.6rem;font-weight:600;background:rgba(230,0,126,.1);color:var(--pink);padding:.12rem .4rem;border-radius:4px;margin-top:.2rem}
+.market-shipping{font-size:.65rem;color:var(--muted);margin-top:.25rem}
+.market-card.loading{opacity:.5}
+.market-card.error-card{border-color:var(--error);opacity:.8}
+
+/* Webhook */
+.webhook-cards{display:flex;flex-direction:column;gap:.65rem}
+.webhook-card{padding:.8rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--white);transition:all .2s}
+.webhook-card.valid{border-left:3px solid var(--success)}
+.webhook-card.invalid{border-left:3px solid #D4870E}
+.webhook-card.nosig{border-left:3px solid var(--error)}
+.webhook-card h4{font-size:.82rem;font-weight:600;margin-bottom:.15rem}
+.webhook-card p{font-size:.72rem;color:var(--muted);margin-bottom:.5rem}
+.webhook-send{font-family:var(--font-body);font-size:.75rem;font-weight:500;padding:.4rem .9rem;border-radius:7px;border:none;cursor:pointer;color:#fff;transition:all .2s}
+.webhook-send:hover{transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.webhook-send:active{transform:scale(.97)}
+.webhook-send.valid-btn{background:var(--success)}
+.webhook-send.invalid-btn{background:#D4870E}
+.webhook-send.nosig-btn{background:var(--error)}
+.webhook-send:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.webhook-result{margin-top:.45rem;font-size:.72rem;font-weight:500;padding:.3rem .6rem;border-radius:5px;display:none;animation:slideLeft .3s ease}
+.webhook-result.show{display:inline-block}
+.webhook-result.ok{background:rgba(27,158,111,.1);color:var(--success)}
+.webhook-result.fail{background:rgba(214,59,75,.1);color:var(--error)}
+@keyframes slideLeft{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.payload-toggle{font-size:.68rem;color:var(--muted);cursor:pointer;margin-top:.4rem;user-select:none;display:flex;align-items:center;gap:.25rem}
+.payload-toggle:hover{color:var(--charcoal)}
+.payload-preview{display:none;margin-top:.35rem;padding:.5rem;background:var(--cream);border-radius:6px;font-family:var(--font-mono);font-size:.62rem;line-height:1.6;color:var(--muted);max-height:140px;overflow-y:auto;white-space:pre-wrap}
+.payload-preview.show{display:block}
+
+/* Utilities */
+.label{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.35rem}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-left">
+    <span class="logo-badge">hudabeauty</span>
+    <span class="header-subtitle">API Demo Dashboard</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:.6rem">
+    <a href="/docs.html" style="font-family:var(--font-body);font-size:.78rem;font-weight:500;color:var(--muted);text-decoration:none;padding:.4rem .75rem;border:1px solid var(--border);border-radius:8px;transition:all .2s" onmouseover="this.style.borderColor='var(--pink)';this.style.color='var(--pink)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Docs</a>
+    <div class="health-wrap">
+    <button class="health-btn" id="healthBtn">
+      <span class="health-dot" id="healthDot"></span>
+      <span id="healthLabel">Online</span>
+    </button>
+    <div class="health-popover" id="healthPopover">
+      <dt>Status</dt><dd id="hpStatus">&mdash;</dd>
+      <dt>Uptime</dt><dd id="hpUptime">&mdash;</dd>
+      <dt>Timestamp</dt><dd id="hpTime">&mdash;</dd>
+    </div>
+  </div>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-eyebrow">Nude Obsessions Reloaded</div>
+  <h1>Campaign Backend <em>Demo</em></h1>
+  <p>Interactive API playground for the Huda Beauty eCommerce backend assessment</p>
+</section>
+
+<!-- Tabs -->
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="gwp">&#127873; Gift With Purchase <span class="method">POST</span></button>
+  <button class="tab-btn" data-tab="pricing">&#128176; Pricing <span class="method">GET</span></button>
+  <button class="tab-btn" data-tab="webhook">&#128274; Webhook <span class="method">POST</span></button>
+</nav>
+
+<!-- Content -->
+<div class="container">
+
+<!-- GWP Section -->
+<div class="section active" id="sec-gwp">
+  <div class="section-header">
+    <h2>Gift With Purchase Engine</h2>
+    <p>Add products to the cart and the GWP rules are evaluated automatically in real time.</p>
+  </div>
+  <div class="split-grid">
+    <div class="left-panel">
+      <div>
+        <div class="label">Currency</div>
+        <div class="currency-pills" id="currencyPills">
+          <button class="pill active" data-cur="AED">AED</button>
+          <button class="pill" data-cur="USD">USD</button>
+          <button class="pill" data-cur="GBP">GBP</button>
+          <button class="pill" data-cur="SAR">SAR</button>
+        </div>
+      </div>
+      <div>
+        <div class="label">Products</div>
+        <div class="product-list" id="productList"></div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-label"><span>GWP Threshold Progress</span><span id="progressText">0 / &mdash;</span></div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+      <div class="gift-result pending" id="giftResult">Add items to your cart to check eligibility</div>
+    </div>
+    <div class="response-panel">
+      <div class="response-header">
+        <span class="response-title"><span class="response-dot"></span> API Response</span>
+        <span class="status-badge waiting" id="gwpStatus">&mdash;</span>
+      </div>
+      <div class="request-info" id="gwpRequestInfo">
+        <div class="req-line"><span class="req-arrow">→</span> <span class="req-method">POST</span> <span class="req-url">waiting for request...</span></div>
+      </div>
+      <div class="response-body"><pre id="gwpJson"><span class="placeholder">// POST /api/gwp/check
+// Add items to cart to see live response</span></pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- Pricing Section -->
+<div class="section" id="sec-pricing">
+  <div class="section-header">
+    <h2>Multi-Market Pricing</h2>
+    <p>Select a product to fetch pricing across all four markets simultaneously.</p>
+  </div>
+  <div class="split-grid">
+    <div class="left-panel">
+      <div>
+        <div class="label">Select Product</div>
+        <div class="pricing-products" id="pricingProducts">
+          <div class="pricing-card" data-pid="nude-obsessions-mini">Nude Obsessions Mini</div>
+          <div class="pricing-card" data-pid="nude-obsessions-full">Nude Obsessions Full Size</div>
+          <div class="pricing-card" data-pid="faux-mink-lashes">Faux Mink Lashes</div>
+        </div>
+      </div>
+      <div>
+        <div class="label" id="marketLabel" style="display:none">Market Results</div>
+        <div class="market-grid" id="marketGrid"></div>
+      </div>
+    </div>
+    <div class="response-panel">
+      <div class="response-header">
+        <span class="response-title"><span class="response-dot"></span> API Response</span>
+        <span class="status-badge waiting" id="pricingStatus">&mdash;</span>
+      </div>
+      <div class="request-info" id="pricingRequestInfo">
+        <div class="req-line"><span class="req-arrow">→</span> <span class="req-method">GET</span> <span class="req-url">waiting for request...</span></div>
+      </div>
+      <div class="response-body"><pre id="pricingJson"><span class="placeholder">// GET /api/pricing?productId=X&amp;market=Y
+// Select a product to fetch pricing</span></pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- Webhook Section -->
+<div class="section" id="sec-webhook">
+  <div class="section-header">
+    <h2>Webhook Signature Verification</h2>
+    <p>Test Shopify HMAC-SHA256 webhook validation with three signature scenarios.</p>
+  </div>
+  <div class="split-grid">
+    <div class="left-panel">
+      <div class="webhook-cards" id="webhookCards">
+        <div class="webhook-card valid">
+          <h4>&#9989; Valid Signature</h4>
+          <p>Simulates a legitimate Shopify order event with a correctly computed HMAC.</p>
+          <button class="webhook-send valid-btn" data-type="valid">Send Request</button>
+          <div class="webhook-result" id="result-valid"></div>
+          <div class="payload-toggle" data-target="payload-valid">&#9656; View payload</div>
+          <pre class="payload-preview" id="payload-valid"></pre>
+        </div>
+        <div class="webhook-card invalid">
+          <h4>&#9888;&#65039; Invalid Signature</h4>
+          <p>A forged signature is sent &mdash; the server should reject it.</p>
+          <button class="webhook-send invalid-btn" data-type="invalid">Send Request</button>
+          <div class="webhook-result" id="result-invalid"></div>
+          <div class="payload-toggle" data-target="payload-invalid">&#9656; View payload</div>
+          <pre class="payload-preview" id="payload-invalid"></pre>
+        </div>
+        <div class="webhook-card nosig">
+          <h4>&#128683; No Signature</h4>
+          <p>No HMAC header at all &mdash; the server should reject it immediately.</p>
+          <button class="webhook-send nosig-btn" data-type="nosig">Send Request</button>
+          <div class="webhook-result" id="result-nosig"></div>
+          <div class="payload-toggle" data-target="payload-nosig">&#9656; View payload</div>
+          <pre class="payload-preview" id="payload-nosig"></pre>
+        </div>
+      </div>
+    </div>
+    <div class="response-panel">
+      <div class="response-header">
+        <span class="response-title"><span class="response-dot"></span> API Response</span>
+        <span class="status-badge waiting" id="webhookStatus">&mdash;</span>
+      </div>
+      <div class="request-info" id="webhookRequestInfo">
+        <div class="req-line"><span class="req-arrow">→</span> <span class="req-method">POST</span> <span class="req-url">waiting for request...</span></div>
+      </div>
+      <div class="response-body"><pre id="webhookJson"><span class="placeholder">// POST /webhooks/orders/paid
+// Click a scenario to test webhook verification</span></pre></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const API = '';
+const SECRET = 'your_shared_secret_here';
+
+// ── State ──
+let currency = 'AED';
+let cart = {};
+let gwpDebounce = null;
+let orderCounter = 1000;
+
+const PRODUCTS = [
+  { id:'nude-lip-01', variantId:'v-lip-01', emoji:'\u{1F484}', name:'Nude Obsessions Lipstick', price:160, tags:['lipstick'] },
+  { id:'nude-lip-mini', variantId:'v-lip-02', emoji:'\u{1F48B}', name:'Nude Obsessions Mini', price:89, tags:['lipstick'] },
+  { id:'faux-mink-lashes', variantId:'v-lash-01', emoji:'\u{1F441}', name:'Faux Mink Lashes', price:129, tags:['lashes'] },
+  { id:'classic-lashes', variantId:'v-lash-02', emoji:'\u2728', name:'Classic Lashes', price:89, tags:['lashes'] },
+  { id:'legit-mascara', variantId:'v-eyes-01', emoji:'\u{1F5A4}', name:'Legit Lashes Mascara', price:115, tags:['eyes'] },
+];
+
+const MARKETS = [
+  { code:'en-AE', flag:'\u{1F1E6}\u{1F1EA}', name:'UAE (AED)' },
+  { code:'en-US', flag:'\u{1F1FA}\u{1F1F8}', name:'United States (USD)' },
+  { code:'en-GB', flag:'\u{1F1EC}\u{1F1E7}', name:'United Kingdom (GBP)' },
+  { code:'en-SA', flag:'\u{1F1F8}\u{1F1E6}', name:'Saudi Arabia (SAR)' },
+];
+
+// ── Tabs ──
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    const sec = document.getElementById('sec-' + btn.dataset.tab);
+    sec.classList.add('active');
+    sec.style.animation = 'none';
+    sec.offsetHeight;
+    sec.style.animation = '';
+  });
+});
+
+// ── Health ──
+const healthBtn = document.getElementById('healthBtn');
+const healthPopover = document.getElementById('healthPopover');
+let healthOpen = false;
+
+healthBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  healthOpen = !healthOpen;
+  healthPopover.classList.toggle('show', healthOpen);
+});
+document.addEventListener('click', () => { healthOpen = false; healthPopover.classList.remove('show'); });
+
+async function fetchHealth() {
+  try {
+    const r = await fetch(API + '/health');
+    const d = await r.json();
+    document.getElementById('healthDot').classList.remove('offline');
+    document.getElementById('healthLabel').textContent = 'Online';
+    document.getElementById('hpStatus').textContent = d.status || 'OK';
+    document.getElementById('hpUptime').textContent = d.uptime ? Math.round(d.uptime) + 's' : '\u2014';
+    document.getElementById('hpTime').textContent = d.timestamp ? new Date(d.timestamp).toLocaleTimeString() : new Date().toLocaleTimeString();
+  } catch {
+    document.getElementById('healthDot').classList.add('offline');
+    document.getElementById('healthLabel').textContent = 'Offline';
+    document.getElementById('hpStatus').textContent = 'Unreachable';
+  }
+}
+fetchHealth();
+setInterval(fetchHealth, 15000);
+
+// ── GWP ──
+function renderProducts() {
+  const list = document.getElementById('productList');
+  list.innerHTML = PRODUCTS.map(p => {
+    const qty = cart[p.id] || 0;
+    return `<div class="product-card ${qty > 0 ? 'in-cart' : ''}" data-id="${p.id}">
+      <div class="product-emoji">${p.emoji}</div>
+      <div class="product-info">
+        <div class="product-name">${p.name}</div>
+        <div class="product-price">${currency} ${p.price}</div>
+      </div>
+      <div class="qty-controls">
+        <button class="qty-btn" onclick="changeQty('${p.id}',-1)">\u2212</button>
+        <span class="qty-val">${qty}</span>
+        <button class="qty-btn" onclick="changeQty('${p.id}',1)">+</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function changeQty(id, delta) {
+  cart[id] = Math.max(0, (cart[id] || 0) + delta);
+  const card = document.querySelector(`.product-card[data-id="${id}"]`);
+  if (card) { card.classList.remove('bounce'); void card.offsetWidth; card.classList.add('bounce'); }
+  renderProducts();
+  scheduleGwpCheck();
+}
+
+function scheduleGwpCheck() {
+  clearTimeout(gwpDebounce);
+  gwpDebounce = setTimeout(doGwpCheck, 300);
+}
+
+async function doGwpCheck() {
+  const lineItems = PRODUCTS.filter(p => cart[p.id] > 0).map(p => ({
+    productId: p.id, variantId: p.variantId, title: p.name,
+    quantity: cart[p.id], price: p.price.toFixed(2), tags: p.tags
+  }));
+
+  if (lineItems.length === 0) {
+    document.getElementById('gwpJson').innerHTML = '<span class="placeholder">// POST /api/gwp/check\n// Add items to cart to see live response</span>';
+    document.getElementById('gwpStatus').textContent = '\u2014';
+    document.getElementById('gwpStatus').className = 'status-badge waiting';
+    document.getElementById('progressFill').style.width = '0';
+    document.getElementById('progressText').textContent = '0 / \u2014';
+    const gr = document.getElementById('giftResult');
+    gr.textContent = 'Add items to your cart to check eligibility';
+    gr.className = 'gift-result pending';
+    return;
+  }
+
+  try {
+    const reqBody = JSON.stringify({ currency, lineItems });
+    const reqUrl = location.origin + '/api/gwp/check';
+    const t0 = performance.now();
+    const r = await fetch(API + '/api/gwp/check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: reqBody
+    });
+    const d = await r.json();
+    const ms = Math.round(performance.now() - t0);
+    setStatus('gwpStatus', r.status);
+    setRequestInfo('gwpRequestInfo', 'POST', reqUrl, reqBody.length, r.status, r.statusText, ms);
+    document.getElementById('gwpJson').textContent = JSON.stringify(d, null, 2);
+
+    // Progress
+    const total = lineItems.reduce((s, i) => s + i.price * i.quantity, 0);
+    const threshold = d.threshold || (d.thresholdRemaining ? total + d.thresholdRemaining : 0);
+    if (threshold > 0) {
+      const pct = Math.min(100, (total / threshold) * 100);
+      document.getElementById('progressFill').style.width = pct + '%';
+      document.getElementById('progressText').textContent = `${currency} ${total} / ${currency} ${threshold}`;
+    } else {
+      document.getElementById('progressFill').style.width = '100%';
+      document.getElementById('progressText').textContent = `${currency} ${total}`;
+    }
+
+    // Gift result
+    const gr = document.getElementById('giftResult');
+    if (d.qualifies || d.eligible || (d.gifts && d.gifts.length > 0)) {
+      const giftNames = d.gifts ? d.gifts.map(g => g.title || g.name || g.productId).join(', ') : 'Gift unlocked';
+      gr.textContent = '\u{1F381} ' + giftNames;
+      gr.className = 'gift-result unlocked';
+    } else {
+      const remaining = d.thresholdRemaining || d.remaining;
+      gr.textContent = remaining ? `Spend ${currency} ${remaining} more to unlock your gift` : 'Not yet eligible for a gift';
+      gr.className = 'gift-result pending';
+    }
+  } catch (e) {
+    document.getElementById('gwpJson').textContent = 'Error: ' + e.message;
+    setStatus('gwpStatus', 0);
+  }
+}
+
+// Currency
+document.getElementById('currencyPills').addEventListener('click', (e) => {
+  const pill = e.target.closest('.pill');
+  if (!pill) return;
+  currency = pill.dataset.cur;
+  document.querySelectorAll('#currencyPills .pill').forEach(p => p.classList.toggle('active', p === pill));
+  renderProducts();
+  scheduleGwpCheck();
+});
+
+renderProducts();
+
+// ── Pricing ──
+document.getElementById('pricingProducts').addEventListener('click', async (e) => {
+  const card = e.target.closest('.pricing-card');
+  if (!card) return;
+  const pid = card.dataset.pid;
+
+  document.querySelectorAll('.pricing-card').forEach(c => c.classList.toggle('active', c === card));
+  document.getElementById('marketLabel').style.display = 'block';
+
+  const grid = document.getElementById('marketGrid');
+  grid.innerHTML = MARKETS.map(m => `<div class="market-card loading" data-market="${m.code}">
+    <div class="market-flag">${m.flag} ${m.name}</div>
+    <div class="market-price">\u2026</div>
+  </div>`).join('');
+
+  try {
+    const t0 = performance.now();
+    const reqUrls = MARKETS.map(m => `${location.origin}/api/pricing?productId=${pid}&market=${m.code}`);
+    const results = await Promise.all(MARKETS.map(async (m, i) => {
+      try {
+        const r = await fetch(API + `/api/pricing?productId=${pid}&market=${m.code}`);
+        return { market: m, status: r.status, data: await r.json() };
+      } catch (err) {
+        return { market: m, status: 0, data: { error: err.message } };
+      }
+    }));
+    const ms = Math.round(performance.now() - t0);
+
+    const maxStatus = Math.max(...results.map(r => r.status));
+    setStatus('pricingStatus', maxStatus || 200);
+    setRequestInfo('pricingRequestInfo', 'GET', reqUrls[0].replace(MARKETS[0].code, '{market}') + ' (×4 parallel)', null, maxStatus || 200, maxStatus >= 400 ? 'Error' : 'OK', ms);
+    document.getElementById('pricingJson').textContent = JSON.stringify(results.map(r => r.data), null, 2);
+
+    grid.innerHTML = results.map(r => {
+      const d = r.data;
+      const isErr = r.status >= 400 || r.status === 0;
+      const price = d.finalPrice ?? d.price ?? d.amount ?? '\u2014';
+      const curr = d.currency || '';
+      const discount = d.discount || d.discountPercentage;
+      const shipping = d.shippingThreshold || d.freeShippingMin;
+      return `<div class="market-card ${isErr ? 'error-card' : ''}">
+        <div class="market-flag">${r.market.flag} ${r.market.name}</div>
+        <div class="market-price">${isErr ? 'Error' : curr + ' ' + price}</div>
+        ${discount && !isErr ? `<span class="market-discount">${discount}% off</span>` : ''}
+        ${shipping && !isErr ? `<div class="market-shipping">Free shipping over ${curr} ${shipping}</div>` : ''}
+      </div>`;
+    }).join('');
+  } catch (e) {
+    document.getElementById('pricingJson').textContent = 'Error: ' + e.message;
+    setStatus('pricingStatus', 0);
+  }
+});
+
+// ── Webhook ──
+async function computeHmac(body) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(body));
+  return btoa(String.fromCharCode(...new Uint8Array(sig)));
+}
+
+function buildOrderPayload() {
+  orderCounter++;
+  const lineItems = PRODUCTS.filter(p => cart[p.id] > 0);
+  const hasCart = lineItems.length > 0;
+  const total = hasCart ? lineItems.reduce((s, p) => s + p.price * (cart[p.id] || 0), 0) : 349;
+
+  return {
+    id: orderCounter,
+    order_number: orderCounter,
+    email: 'demo@hudabeauty.com',
+    created_at: new Date().toISOString(),
+    financial_status: 'paid',
+    currency: currency,
+    total_price: total.toFixed(2),
+    line_items: hasCart
+      ? lineItems.map(p => ({ product_id: p.id, title: p.name, quantity: cart[p.id], price: (p.price * cart[p.id]).toFixed(2) }))
+      : [
+          { product_id: 'nude-obsessions-mini', title: 'Nude Obsessions Mini', quantity: 1, price: '220.00' },
+          { product_id: 'faux-mink-lashes', title: 'Faux Mink Lashes', quantity: 1, price: '129.00' }
+        ],
+    shipping_address: { city: 'Dubai', country: 'AE' }
+  };
+}
+
+function updatePayloadPreviews() {
+  const payload = buildOrderPayload();
+  orderCounter--;
+  const json = JSON.stringify(payload, null, 2);
+  ['valid','invalid','nosig'].forEach(id => {
+    document.getElementById('payload-' + id).textContent = json;
+  });
+}
+updatePayloadPreviews();
+
+// Payload toggles
+document.querySelectorAll('.payload-toggle').forEach(toggle => {
+  toggle.addEventListener('click', () => {
+    const target = document.getElementById(toggle.dataset.target);
+    const open = target.classList.toggle('show');
+    toggle.innerHTML = (open ? '\u25BE' : '\u25B8') + ' ' + (open ? 'Hide' : 'View') + ' payload';
+  });
+});
+
+// Send buttons
+document.querySelectorAll('.webhook-send').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const type = btn.dataset.type;
+    btn.disabled = true;
+    updatePayloadPreviews();
+
+    const payload = buildOrderPayload();
+    const bodyStr = JSON.stringify(payload);
+    const headers = { 'Content-Type': 'application/json' };
+
+    if (type === 'valid') {
+      headers['X-Shopify-Hmac-Sha256'] = await computeHmac(bodyStr);
+    } else if (type === 'invalid') {
+      headers['X-Shopify-Hmac-Sha256'] = btoa('this-is-a-forged-signature-000000000');
+    }
+
+    try {
+      const reqUrl = location.origin + '/webhooks/orders/paid';
+      const t0 = performance.now();
+      const r = await fetch(API + '/webhooks/orders/paid', { method: 'POST', headers, body: bodyStr });
+      let data;
+      try { data = await r.json(); } catch { data = { status: r.status, statusText: r.statusText }; }
+      const ms = Math.round(performance.now() - t0);
+
+      setStatus('webhookStatus', r.status);
+      setRequestInfo('webhookRequestInfo', 'POST', reqUrl, bodyStr.length, r.status, r.statusText, ms);
+      document.getElementById('webhookJson').textContent = JSON.stringify({
+        scenario: type === 'valid' ? 'Valid Signature' : type === 'invalid' ? 'Invalid Signature' : 'No Signature',
+        request: {
+          url: '/webhooks/orders/paid',
+          method: 'POST',
+          hmacHeader: headers['X-Shopify-Hmac-Sha256'] || '(none)',
+          body: payload
+        },
+        response: { status: r.status, body: data }
+      }, null, 2);
+
+      const result = document.getElementById('result-' + type);
+      result.textContent = r.status === 200 ? '\u2713 200 OK \u2014 Verified' : `\u2717 ${r.status} \u2014 Rejected`;
+      result.className = 'webhook-result show ' + (r.status === 200 ? 'ok' : 'fail');
+    } catch (e) {
+      document.getElementById('webhookJson').textContent = JSON.stringify({ error: e.message }, null, 2);
+      setStatus('webhookStatus', 0);
+      const result = document.getElementById('result-' + type);
+      result.textContent = '\u2717 Network error';
+      result.className = 'webhook-result show fail';
+    }
+
+    btn.disabled = false;
+  });
+});
+
+// ── Utilities ──
+function setStatus(id, code) {
+  const el = document.getElementById(id);
+  el.textContent = code || 'ERR';
+  if (code >= 200 && code < 300) el.className = 'status-badge s2xx';
+  else if (code >= 400 && code < 500) el.className = 'status-badge s4xx';
+  else if (code >= 500) el.className = 'status-badge s5xx';
+  else el.className = 'status-badge s5xx';
+}
+
+function setRequestInfo(id, method, url, bodySize, status, statusText, ms) {
+  const el = document.getElementById(id);
+  const isOk = status >= 200 && status < 300;
+  const sizeStr = bodySize ? `${bodySize} bytes` : '';
+  el.innerHTML = `
+    <div class="req-line">
+      <span class="req-arrow">→</span>
+      <span class="req-method">${method}</span>
+      <span class="req-url">${url}</span>
+      ${sizeStr ? `<span class="req-size">${sizeStr}</span>` : ''}
+    </div>
+    <div class="req-line">
+      <span class="res-arrow">←</span>
+      <span class="res-status ${isOk ? 'ok' : 'err'}">${status} ${statusText || (isOk ? 'OK' : 'Error')}</span>
+      <span class="res-time">${ms}ms</span>
+    </div>
+  `;
+}
+</script>
+</body>
+</html>

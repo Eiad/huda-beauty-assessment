@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import path from 'path';
 import { requestLogger } from './middleware/requestLogger';
 import { errorHandler } from './middleware/errorHandler';
 import healthRouter from './routes/health';
@@ -8,6 +9,9 @@ import pricingRouter from './routes/pricing';
 
 export function createApp() {
   const app = express();
+
+  // Serve the demo dashboard
+  app.use(express.static(path.join(process.cwd(), 'public')));
 
   // Raw body buffer needed for HMAC verification — must come before json().
   // express.raw() sets req._body = true after consuming the stream, so
