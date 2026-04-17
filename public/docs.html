@@ -83,7 +83,6 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--charcoal);
 }
 
 .file-top{display:flex;align-items:center;gap:.6rem;margin-bottom:.65rem}
-.file-emoji{font-size:1.25rem;flex-shrink:0}
 .file-path{font-family:var(--font-mono);font-size:.72rem;font-weight:500;color:var(--pink);background:var(--pink-light);padding:.2rem .55rem;border-radius:5px}
 
 .file-section{margin-bottom:.55rem}
@@ -187,7 +186,6 @@ const FILES = [
  {
  id: 'server.ts',
  path: 'src/server.ts',
- emoji: '\u{1F680}',
  what: 'The starting point. Loads environment variables, validates that SHOPIFY_WEBHOOK_SECRET exists (fails fast if not), initializes the SQLite database, starts the Express server, and handles graceful shutdown on SIGTERM/SIGINT.',
  why: 'Demonstrates environment validation, initialization ordering, and graceful shutdown \u2014 the kind of production hardening interviewers look for.',
  connects: ['app.ts', 'store.ts', 'logger.ts']
@@ -195,7 +193,6 @@ const FILES = [
  {
  id: 'app.ts',
  path: 'src/app.ts',
- emoji: '\u{1F3D7}\uFE0F',
  what: 'The Express app factory. Registers middleware in the right order (raw body parsing for webhooks BEFORE JSON parsing for everything else), mounts all 4 route handlers, adds a 404 catch-all, and attaches the error handler last. Also serves the demo dashboard from the public/ folder.',
  why: 'Shows awareness that Express middleware order is critical \u2014 especially the raw body requirement for HMAC verification.',
  connects: ['requestLogger.ts', 'hmacVerify.ts', 'errorHandler.ts', 'health.ts', 'webhook.ts', 'gwp.ts', 'pricing.ts']
@@ -209,7 +206,6 @@ const FILES = [
  {
  id: 'requestLogger.ts',
  path: 'src/middleware/requestLogger.ts',
- emoji: '\u{1F4DD}',
  what: 'Logs every HTTP request with structured JSON \u2014 method, URL, IP, status code, and duration in milliseconds. Uses Winston severity levels: 2xx = info, 4xx = warn, 5xx = error. This is how you\u2019d feed Datadog or New Relic in production.',
  why: 'Structured request logging is table stakes for any production API. Shows observability thinking.',
  connects: ['logger.ts']
@@ -217,7 +213,6 @@ const FILES = [
  {
  id: 'hmacVerify.ts',
  path: 'src/middleware/hmacVerify.ts',
- emoji: '\u{1F512}',
  what: 'The security gatekeeper. Validates that every Shopify webhook is authentic by checking the HMAC-SHA256 signature in the header. Includes 5 layers of protection: secret check, header presence, Buffer type check, length-safe timing comparison, and JSON parse with error handling.',
  why: 'Webhook signature verification is non-negotiable for Shopify integrations. The timing-safe comparison prevents timing attacks.',
  connects: ['errorHandler.ts', 'logger.ts']
@@ -225,7 +220,6 @@ const FILES = [
  {
  id: 'errorHandler.ts',
  path: 'src/middleware/errorHandler.ts',
- emoji: '\u{1F6E1}\uFE0F',
  what: 'The safety net. Catches any unhandled error, classifies it as client error (4xx) or server error (5xx), logs it at the right severity, and returns a clean JSON response. Also exports AppError \u2014 a custom error class that carries its own HTTP status code.',
  why: 'Centralized error handling keeps route code clean and ensures consistent error responses across the entire API.',
  connects: ['logger.ts']
@@ -239,7 +233,6 @@ const FILES = [
  {
  id: 'health.ts',
  path: 'src/routes/health.ts',
- emoji: '\u{1F49A}',
  what: 'The heartbeat. Returns service status, uptime, and timestamp. In production, a monitoring tool like Datadog pings this every 30 seconds to know the service is alive.',
  why: 'Every production API needs a health check. It\u2019s also used by the dashboard\u2019s green status dot.',
  connects: []
@@ -247,7 +240,6 @@ const FILES = [
  {
  id: 'webhook.ts',
  path: 'src/routes/webhook.ts',
- emoji: '\u{1F4E8}',
  what: 'Receives Shopify orders/paid webhook events. Responds with 200 immediately (Shopify has a 5-second timeout), then processes the order asynchronously in the background. Uses HMAC middleware to verify authenticity before processing.',
  why: 'Shows understanding of Shopify\u2019s webhook contract: respond fast, process later, never lose data.',
  connects: ['hmacVerify.ts', 'webhookProcessor.ts', 'logger.ts']
@@ -255,7 +247,6 @@ const FILES = [
  {
  id: 'gwp.ts',
  path: 'src/routes/gwp.ts',
- emoji: '\u{1F381}',
  what: 'The Gift With Purchase API endpoint. Accepts a cart payload, validates it (currency, line items, individual item fields), runs it through the GWP engine, and returns which gifts are unlocked.',
  why: 'Demonstrates thorough input validation before business logic \u2014 a pattern that prevents garbage-in, garbage-out.',
  connects: ['gwpEngine.ts', 'errorHandler.ts']
@@ -263,7 +254,6 @@ const FILES = [
  {
  id: 'pricing.ts',
  path: 'src/routes/pricing.ts',
- emoji: '\u{1F4B0}',
  what: 'The multi-market pricing endpoint. Takes a product ID and market locale, looks up the localized price, calculates any active discount, and returns the full pricing breakdown.',
  why: 'Multi-market pricing is core to Huda Beauty\u2019s global operation. Shows handling of locale-specific business logic.',
  connects: ['pricingService.ts', 'errorHandler.ts']
@@ -277,7 +267,6 @@ const FILES = [
  {
  id: 'webhookProcessor.ts',
  path: 'src/services/webhookProcessor.ts',
- emoji: '\u{2699}\uFE0F',
  what: 'The order processing worker. Parses Shopify\u2019s raw order payload into a clean structure, then stores it in SQLite with retry logic. If the write fails 3 times, it logs a dead-letter event. In production, this would be a separate queue worker process.',
  why: 'Retry logic with dead-letter logging shows production-grade thinking \u2014 not just the happy path.',
  connects: ['store.ts', 'retry.ts', 'logger.ts']
@@ -285,7 +274,6 @@ const FILES = [
  {
  id: 'gwpEngine.ts',
  path: 'src/services/gwpEngine.ts',
- emoji: '\u{1F9E0}',
  what: 'The brain of the GWP system. Evaluates two types of rules: cart value thresholds (spend AED 260 = free mascara) and product collection matches (buy any lashes = free glue). Rules are loaded from a JSON config file \u2014 zero code changes needed to add new promotions.',
  why: 'Config-driven business rules show separation of concerns. Marketing can iterate without engineering deploys.',
  connects: ['gwpRules.json']
@@ -293,7 +281,6 @@ const FILES = [
  {
  id: 'pricingService.ts',
  path: 'src/services/pricingService.ts',
- emoji: '\u{1F4CA}',
  what: 'Looks up product pricing for a specific market. Handles percentage discounts (10% off), fixed discounts (\u00A32 off), and no-discount cases. Floors negative prices at zero. Derives supported markets dynamically from the catalog \u2014 no hardcoded list to maintain.',
  why: 'Dynamic market derivation means adding a new country is a data change, not a code change.',
  connects: ['marketPricing.json']
@@ -307,7 +294,6 @@ const FILES = [
  {
  id: 'store.ts',
  path: 'src/store.ts',
- emoji: '\u{1F4BE}',
  what: 'The data layer. Initializes SQLite, creates the orders table, and provides an idempotent upsert \u2014 sending the same order twice won\u2019t create duplicates. The prepared statement is cached at init time for performance. Also exports closeDb() for graceful shutdown.',
  why: 'Idempotent writes are critical for webhook reliability. Shopify will retry, and duplicates must be safe.',
  connects: ['logger.ts']
@@ -321,7 +307,6 @@ const FILES = [
  {
  id: 'gwpRules.json',
  path: 'src/config/gwpRules.json',
- emoji: '\u{1F4CB}',
  what: 'The promotion rulebook. Defines two GWP rules: a cart threshold (AED 260 for a free mascara) and a collection match (any lashes product for free glue). Marketing can change thresholds or add new rules here without touching code.',
  why: 'Externalizing business rules into config is a clean architecture pattern. No deploys needed for promo changes.',
  connects: ['gwpEngine.ts']
@@ -329,7 +314,6 @@ const FILES = [
  {
  id: 'marketPricing.json',
  path: 'src/config/marketPricing.json',
- emoji: '\u{1F30D}',
  what: 'The product catalog. Contains 3 products across 4 markets (UAE, US, UK, Saudi Arabia) with base prices, discount configurations, and free shipping thresholds. In production, this data would come from Shopify\u2019s Storefront API.',
  why: 'Shows the data shape that a real Shopify integration would provide. Makes the demo self-contained.',
  connects: ['pricingService.ts']
@@ -343,7 +327,6 @@ const FILES = [
  {
  id: 'logger.ts',
  path: 'src/utils/logger.ts',
- emoji: '\u{1F4F0}',
  what: 'A Winston logger configured for structured JSON output. Every log line includes a timestamp, service name, and event type. In production, you\u2019d swap the console transport for a Datadog or New Relic forwarder.',
  why: 'Structured logging is the foundation of production observability. Consistent format means easy parsing.',
  connects: []
@@ -351,7 +334,6 @@ const FILES = [
  {
  id: 'retry.ts',
  path: 'src/utils/retry.ts',
- emoji: '\u{1F504}',
  what: 'An exponential backoff retry utility. Wraps any async function and retries on failure: 200ms \u2192 400ms \u2192 dead-letter. Used by the webhook processor to handle transient storage failures.',
  why: 'Generic retry logic is reusable infrastructure. Extract once, use everywhere.',
  connects: ['webhookProcessor.ts']
@@ -378,7 +360,6 @@ function render() {
  const delay = (gi * 0.05) + (fi * 0.06);
  html += `<div class="file-card layer-${group.layer}" id="card-${file.id}" style="animation-delay:${delay}s">`;
  html += `<div class="file-top">`;
- html += `<span class="file-emoji">${file.emoji}</span>`;
  html += `<span class="file-path">${file.path}</span>`;
  html += `</div>`;
 
